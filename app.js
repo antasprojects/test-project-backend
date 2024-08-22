@@ -11,7 +11,7 @@ app.use(cors())
 app.use(logger)
 
 app.get("/", (req, res) => {
-    res.send("Hello World!")
+    res.send("The power rangers MVC is live!")
 })
 
 
