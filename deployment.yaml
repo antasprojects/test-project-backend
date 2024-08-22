@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rangers-mvc
+  name: rangers-mvc
+  namespace: default
+spec:
+  replicas: 2 
+  minReadySeconds: 45
+  selector:
+    matchLabels:
+      app: rangers-mvc
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: rangers-mvc
+    spec:
+      containers:
+      - name: rangers-mvc
+        image: proasacio/rangers-mvc:0.0.1.RELEASE
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: liveness-port
+          containerPort: 8000
+        resources: 
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1024Mi 
+        readinessProbe:
+          httpGet:
+            path: /
+            port: liveness-port
+          failureThreshold: 5
+          periodSeconds: 10
+          initialDelaySeconds: 60
+        livenessProbe:
+          httpGet:
+            path: /
+            port: liveness-port
+          failureThreshold: 5
+          periodSeconds: 10
+          initialDelaySeconds: 60
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels: 
+    app: rangers-mvc
+  name: rangers-mvc
+  namespace: default
+spec:
+  ports:
+  - port: 3000 
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: rangers-mvc
+  sessionAffinity: None
+  type: NodePort
